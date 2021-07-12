@@ -1,0 +1,515 @@
+---
+title: "Data Analysis Project"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE, 
+                      warning = FALSE,
+                      comment = "")
+```
+
+
+
+# Student Information
+
+**Elham Jafarghomi**: 
+**G Number G00954064**
+
+
+
+
+# Introduction
+
+This semester we will be working with a data set from the field of **Human Resources Analytics**.
+
+Broadly speaking, this field is concerned with using employee data within a company to optimize objectives such as employee satisfaction, productivity, project management, and most commonly, avoiding employee attrition. 
+
+Ideally, companies would like to keep **attrition rates** (the proportion of employees leaving a company for other opportunities) as low as possible due to the variable costs and business disruptions that come with having to replace productive employees on short notice.
+
+The objective of this project is to perform an exploratory data analysis on the `employee_data` data set to uncover potential solutions for minimizing employee attrition rates. 
+
+
+
+## Employee Attrition Data
+
+The `employee_data` data frame is loaded below and consists of 1,470 employee records for a U.S. based product company. The rows in this data frame represent the attributes of an employee at this company across the variables listed in the table below.
+
+**Note**: If you have not installed the `tidyverse` package, please do so by going to the `Packages` tab in the lower right section of RStudio, select the `Install` button and type `tidyverse` into the prompt.
+
+
+```{r}
+library(tidyverse)
+
+employee_data <- read_rds(url('https://gmubusinessanalytics.netlify.app/data/employee_data.rds'))
+```
+
+
+### Raw Data
+
+```{r}
+
+employee_data
+
+```
+<br>
+<br>
+
+
+# Exploratory Data Analysis
+
+
+Executives at this company have hired you as a data science consultant to identify the factors that lead to employees leaving their company. 
+
+They would like for you to explore why employees are leaving their company and make recommendations on how to minimize this behavior.
+
+You must think of at least 8 relevant questions that explore the relationship between `left_company` and the other variables in the `employee_data` data frame. 
+
+The goal of your analysis should be discovering which variables drive the differences between employees who do and do not leave the company.
+
+You must answer each question and provide supporting data summaries with either a summary data frame (using `dplyr`/`tidyr`) or a plot (using `ggplot`) or both.
+
+In total, you must have a minimum of 5 plots and 4 summary data frames for the exploratory data analysis section. Among the plots you produce, you must have at least 4 different types (ex. box plot, bar chart, histogram, heat map, etc...)
+
+
+Each question must be answered with supporting evidence from your tables and plots. See the example question below.
+
+
+## Sample Question
+
+Is there a relationship between employees leaving the company and their current salary?
+
+
+
+**Answer**: Yes, the data indicates that employees who leave the company tend to have lower salaries when compared to employees who do not. Among the 237 employees that left the company, the average salary was \$76,625. This is over \$20,000 less than the average salary of employees who did not leave the company.
+
+Among the employees *who did not leave the company*, only 10% have a salary that is less than or equal to \$60,000. When looking at employees who did leave the company, this increase to 34%.
+
+
+### Summary Table
+
+```{r}
+employee_data %>% group_by(left_company) %>% 
+                  summarise(n_employees = n(),
+                            min_salary = min(salary),
+                            avg_salary = mean(salary),
+                            max_salary = max(salary),
+                            sd_salary = sd(salary),
+                            pct_less_60k = mean(salary <= 60000))
+```
+
+
+### Data Visulatization
+
+```{r}
+ggplot(data = employee_data, aes(x = salary, fill = left_company)) + 
+   geom_histogram(aes(y = ..density..), color = "white", bins = 20) +
+   facet_wrap(~ left_company, nrow = 2) +
+   labs(title = "Employee Salary Distribution by Status (Left the Comapny - Yes/No)",
+           x = "Salary (US Dollars", y = "Proportion of Employees")
+```
+
+
+************************* Employee Data | Exploratory Data Analysis ****************************
+
+## Exploring Data Frames with `skimr`
+
+```{r}
+library(skimr)
+skim(employee_data)
+```
+
+## Question 1
+
+**Is there a relationship between employees leaving the company and their weekly work hours?**:
+
+
+**Answer**: Yes, the data and result of analysis indicates that employees who leave the company tend to work more hours per week( Minimum of 51 hours) when compared to employees who did not leave the company. Among the 237 employees that left the company, the average weekly hours was almost 59 hours (58.60 hours) . This is almost 10 hours more than the average weekly hours of employees who did not leave the company. 
+
+Among the employees *who did not leave the company*, only 9 % work more than 52 hours per week. However When looking at employees who did leave the company, the percentage of the 
+employees who worked more than 52 hours per week increase to 99% .
+
+### Code
+
+```{r}
+employee_data %>% group_by(left_company) %>% 
+  summarise(num_employees = n(),
+            min_weekly_hrs = min(weekly_hours),
+            avg_weekly_hrs = mean(weekly_hours), 
+            max_weekly_hours = max(weekly_hours), 
+            sd_weekly_hrs = sd(weekly_hours),
+            pct_greater_52hrs = round(mean(weekly_hours> 52),2))
+
+
+```
+
+### Data Visulatization
+
+```{r}
+ggplot(data = employee_data, aes(x = weekly_hours, fill = left_company)) + 
+   geom_histogram(aes(y = ..density..), color = "white", bins = 20) +
+   facet_wrap(~ left_company, nrow = 2) +
+   labs(title = "Employee Weekly Work Hours Distribution by Status (Left the Comapny - Yes/No)",
+           x = "Weekly Hours", y = "Proportion of Employees")
+```
+
+## Question 2
+
+**Question**: **Is there a relationship between employees leaving the company and their commute distance or miles from home?**:
+
+
+**Answer**: Yes, the data supports and indicates that the commute distance or miles from home of employees who did leave the company in average is higher when compared to  miles from home of employees who did not. Among the 237 employees that left the company, the average miles from home is 10.63 miles which is 1.71 miles more than the average miles from home for employees who did not leave the company.
+Among the employees *who did not leave the company*,  only 28 % live more than 10 miles from their work place when Compare with employees who did leave the company, this increase to 39 %. 
+
+Also, from the boxplot below, we can see that the median miles from home for employees who did 
+leave the company is 9miles and  higher than the median miles from home for employees who did not leave the company which is 7. 
+
+### Code
+
+```{r}
+employee_data %>% group_by(left_company) %>% 
+   summarise(num_employees = n(),
+            min_miles_from_home = min(miles_from_home),
+            avg_miles_from_home = round(mean(miles_from_home),2), 
+            median_miles_from_home = median(miles_from_home),
+            max_miles_from_home = max(miles_from_home), 
+            sd_miles_from_home = sd(miles_from_home),
+            pct_greater_10miles = round(mean(miles_from_home> 10),2))
+
+```
+
+### Data Visualization 
+
+```{r}
+ggplot(data = employee_data, aes(x= left_company, miles_from_home, fill = left_company)) + 
+  geom_boxplot() + 
+  labs(title = " Miles from Home by Status (Left the Comapny - Yes/No)",
+           x = "Company Left", y = " Miles from Home")
+```
+
+## Question 3
+
+**Question: Is there a relationship between employees leaving the company and their job satisfaction?**
+
+
+**Answer**: No. The data does not show that there is a relationship between employees leaving the company and their job satisfaction. 
+Across all job satisfaction levels the percentages of the employees who did leave the company are lower than percentages of employees who did not leave the company. These percentages are 4.49, 3.13, 4.97 and 3.54 for low, medium, high and very high respectively. These percentages  comparatively higher when compared to employees who did not leave the company. This indicates that there is no relationship or correlation between job satisfaction and employees leaving the company.
+
+Also, from the Barplot below, we can see that the percentages of employees who left the company 
+are lower across all low, medium, high and very high job satisfaction, when compare to percentages of employees who stayed. 
+
+### Code
+
+```{r}
+emp_job_sat <- employee_data %>% group_by(left_company, job_satisfaction) %>% 
+  summarise(num_employees = n()) %>% 
+  ungroup() %>% 
+  mutate(percent_of_total_employees = round(100*(num_employees/sum(num_employees)),2))
+emp_job_sat
+
+```
+### Data Visulatization
+
+```{r}
+ggplot(data =emp_job_sat , mapping = aes(x = job_satisfaction, y= percent_of_total_employees, 
+       fill = left_company)) +
+       geom_bar(stat = "identity", position = "dodge") + 
+       facet_wrap(~left_company, nrow =2)+
+       labs(title = "Employee Job Satisfaction by Employess status (Left Company(Yes-No)",
+            x = "Employee Left the company",
+            y = "Percentage of Employee")
+
+```
+
+## Question 4
+
+**Question** :Is there a relationship between employee leaving the company and the frequency of 
+ their business travel?
+
+
+**Answer**: No. The data does not indicate that there is a relationship between employee leaving the company and the amount of business travel they had. The percentages of employee who did leave the company with none, rarely and frequently business travel are lower than the percentages of employee who stayed with none, rarely and frequently business travel. 
+
+Also, by looking at the Employee business travel barplot, we can see even in frequently business travel level, the percentages of the employee who left the company is a lot lower that those who stayed. 
+This indicates that frequency of the business travel has no correlation with employee leaving the company.  
+
+### Code
+```{r}
+
+emp_bus_travel <- employee_data %>% group_by(left_company, business_travel) %>% 
+  summarize(num_employees =n()) %>%
+  ungroup() %>% 
+    mutate(percent_of_total_employees = round(100*(num_employees/sum(num_employees)),2))
+
+emp_bus_travel
+
+```
+
+### Data Visulatization
+```{r}
+
+ggplot(data =emp_bus_travel , mapping = aes(x = business_travel, y= percent_of_total_employees, 
+       fill = left_company)) +
+       geom_bar(stat = "identity", position = "dodge") + 
+       facet_wrap(~left_company, nrow =2)+
+       labs(title = "Employee Business Travel by Employee status (Left Company(Yes-No)",
+            x = "Employee Left the company",
+            y = "Percentage of Employee")
+
+```
+
+## Question 5
+
+
+**Question Is there a relationship between employee leaving the company and their total years worked at company?**
+
+**Answer**:Yes. The data indicates that the employees who leave the company tend to have a lower total years at company compare with employees who stayed. Among the 237 employees who left the company the average of years at company is 5.13 when compare to 1233 employees who stayed (average at company 7.37 years), this average is lower by 2 years. 
+Among the 1233 employees who stayed at company, only 36 % have less than 5 years total years at company, but when compare to 237 employees who left the company, this increase to 59 %. 
+
+Also, the boxplot of employee years at company by their status (left company), represents that
+the median of total years at company for employees who stayed(6 year), is two times of the median of total years at company for employees who left (3 year).
+
+### Code
+
+```{r}
+employee_data %>% group_by(left_company) %>% 
+ summarise(num_employees = n(),
+           min_yrs_at_co = min (yrs_at_company),
+           avg_yrs_at_co = round(mean(yrs_at_company),2),
+           median_yrs_at_co = median(yrs_at_company),
+           max_yrs_at_co = max(yrs_at_company),
+           sd_yrs_at_co = sd (yrs_at_company),
+           pct_less_5yrs_at_co = round(mean(yrs_at_company <5),2))
+           
+```
+### Data Visulatization
+```{r}
+
+ggplot(data = employee_data , mapping = aes(x = left_company, y= yrs_at_company,
+       fill = left_company)) +
+       geom_boxplot()+
+       labs(title = "Employee Years at Company by Status(Left Company-Yes/No) ",
+            x = "Employee Left Company",
+            y = "Total Years at Company")
+
+```
+
+## Question 6
+
+**Question: Is there a relationship between employee leaving the company and their total years since promotion?**
+
+**Answer**:No. The data and the result of analysis shows that there is no relationship between 
+employees who left the company and the total years since promotion. The average years since promotion of employees who left the company is 1.92 when compare the average years since promotion of employees who stayed this is 2.23 which is close to each other meaning both groups have almost average of 2 years since promotion. 
+
+Among 237 employees who left the company 22% of them did not get promoted for more than 2 years when compare to employees who stayed we see that 26 % of them did not get promoted for more than 2 years. This is almost close to each other and indicates that years since promotion does not have correlation to employees leaving the company. 
+
+This result also can be observed from the density histogram below, which shows there is not mush variation in employees leaving the company or not by the years since promotion. 
+
+### Code
+```{r}
+employee_data %>% group_by(left_company) %>% 
+                  summarise(num_employees = n(), 
+                            min_yrs_since_promo = min(yrs_since_promotion),
+                            avg_yrs_since_promo = round(mean(yrs_since_promotion),2),
+                            median_yrs_since_promo = median(yrs_since_promotion),
+                            max_yrs_since_promo = max(yrs_since_promotion),
+                            sd_yrs_since_promo = sd(yrs_since_promotion),
+                            pct_greater_2yrs_since_promo = round(mean(yrs_since_promotion>2),2))
+
+```
+### Data Visulatization
+
+```{r}
+
+ggplot(data = employee_data, aes(x = yrs_since_promotion, fill = left_company)) + 
+        geom_histogram(aes(y = ..density..), color = "white", bins = 15) +
+        facet_wrap(~ left_company, nrow = 1) +
+        labs(title = "Employees' Years Since Promotion Distribution by Status (Left the Comapny - Yes/No)", x = "Years since Promotion", y = "Proportion of Employees")
+
+
+```
+
+## Question 7
+
+
+**Question: Is there a relationship between employees leaving the company and their performance rating ?**
+
+
+**Answer**: Yes. The data and the result of analysis indicates that there is a relationship between employees leaving the company and their performance rating. We can see the percentages of bad performance ratings such as Not Effective and Minimally Effective for employee who left the company are higher than percentages of employees who stayed across those ratings. Even though the difference is not extremely big. 
+
+Also, we can see among all employees, only 7 % got the "Meet expectation" performance rating which is from employees who left when compare that to employee who stayed this increase to 30 %. This can be also viewed when comparing the exceed expectations among two groups which shows only 2.38 % of employees who left the company got the exceed expectations rating while this increase to 29.73 % for employees who stayed. Among employees who left barely they got exceptional rating (only 0.2 %) while this increase to 19 % for employees who stayed. 
+
+### Code
+```{r}
+
+employee_data %>% group_by(left_company, performance_rating) %>% 
+     summarise(num_employees = n()) %>% 
+     ungroup() %>% 
+     mutate(percent_of_total_employees = round(100*(num_employees/sum(num_employees)),2))
+
+```
+### Data Visulatization
+```{r}
+
+ggplot(data = employee_data, aes(x = left_company, fill = performance_rating))+
+       geom_bar(stat = "count", position ="fill")+
+       labs (title = "Employees status(Left Company -Yes/No) By their Performance Rating",
+              x = "Employee Left Company",
+              y = "percent_of_total_employees")
+```
+
+
+## Question 8
+
+
+**Question: Is there a relationship between employee leaving the company and number of companies they previously worked for?**
+
+
+**Answer**: Yes. The data indicates that employees who left the company tend to have more companies that they have worked for when compare to employees who stayed. The average number of previous companies among 237 employees who left the company is 4.64 while the average number of previous companies among employees who stayed is 2.96. 
+
+Among employees who "did not leave the company" only 19% previously have worked for more than 3 companies while among the employees who "did leave" the company 77 % of them have worked for more
+than 3 companies. 
+
+Also, from the violin plot below, we can observe that the among the employees who "did not leave the company" a big portion of them had less than or equal to 3 previous companies (concentration of the points). However the plot indicates that a big portion of employees who left the company 
+have worked for more than 3 or 4 companies. (more points towards bigger number of companies.)
+
+### Code 
+```{r}
+employee_data %>% group_by(left_company) %>% 
+     summarise(num_employees = n(),
+     min_co = min(previous_companies), 
+     avg_co = mean(previous_companies), 
+     median_co = median(previous_companies), 
+     max_co = max(previous_companies), 
+     sd_co = sd(previous_companies), 
+     pct_greater_3co = round(mean(previous_companies> 3),2))
+
+
+```
+
+### Data Visulatization
+
+```{r}
+ggplot(data = employee_data, mapping = aes(x = left_company, previous_companies, 
+        y = previous_companies, fill = left_company)) +
+        geom_violin() +  
+        geom_jitter(width = 0.07, alpha = 0.2) +
+  labs(title = "Number of previous companies by status(Left Company-Yes/No)",
+       x = "Employee Left Company", y = "Number of previous companies")
+
+```
+
+
+# Summary of Results
+
+Write an executive summary of your overall findings and recommendations to the executives at this company. Think of this section as your closing remarks of a presentation, where you summarize your key findings and make recommendations to improve HR processes at the company. 
+
+Your executive summary must be written in a [professional tone](https://www.universalclass.com/articles/writing/business-writing/appropriate-tone-in-business-communications.htm), with minimal grammatical errors, and should include the following sections:
+
+1. An introduction where you explain the business problem and goals of your data analysis
+
+    - What problem(s) is this company trying to solve? Why are they important to their future success?
+  
+    - What was the goal of your analysis? What questions were you trying to answer and why do they matter?
+
+
+2. Highlights and key findings from your Exploratory Data Analysis section 
+    - What were the interesting findings from your analysis and **why are they important for the business**?
+
+    - This section is meant to **establish the need for your recommendations** in the following section
+
+
+3. Your recommendations to the company on how to reduce employee attrition rates 
+  
+    - Each recommendation must be supported by your data analysis results 
+
+    - You must clearly explain why you are making each recommendation and which results from your data analysis support this recommendation
+
+    - You must also describe the potential business impact of your recommendation:
+      
+      - Why is this a good recommendation? 
+      
+      - What benefits will the business achieve?
+      
+
+
+## Executive Summary
+
+Please write your executive summary below. If you prefer, you can type your summary in a text editor, such as Microsoft Word, and paste your final text here.
+
+1)
+The company would like to keep **attrition rates** (the proportion of employees leaving a company for other opportunities) as low as possible. This has been always a problem for companies and solving this problem is so important for them, because high attrition rate is expensive for any employer. Having to replace productive employees on short notice, causes business disruptions and inconsistency in production.Not only hiring and training new employees are expensive for companies, but also loosing the value that previous employees were bringing to company is costly. Moreover, high attrition rate damages the overall performance of the company because of the poor ethical environment and culture clash within the company. Therefore, for keeping the costs low , having a high performance company and a healthy company culture which all are elements of success, it is crucial for them to minimize the attrition rate. 
+
+The goal of this project was to perform an exploratory data analysis on the `employee_data` data set to discover the factors such as employees' salaries, weekly work hours, performance rating, business travels and other variables that might have some relationship with employees leaving the companies and uncover potential solutions and provide recommendations for minimizing employee attrition rates.
+
+For this purpose, 8 following questions were tried to be answered:
+
+**Is there a relationship between employees leaving the company and their weekly work hours?**
+
+**Is there a relationship between employees leaving the company and their commute distance or miles from home?**
+
+**Is there a relationship between employees leaving the company and their job satisfaction?**
+
+**Is there a relationship between employee leaving the company and the frequency of their business travel?**
+
+**Is there a relationship between employee leaving the company and their total years worked at company?**
+
+**Is there a relationship between employee leaving the company and their total years since promotion?**
+
+**Is there a relationship between employees leaving the company and their performance rating ?**
+
+**Is there a relationship between employee leaving the company and number of companies they previously worked for?**
+
+These questions are important because by exploring the data and answering them , we can discover potential factors that might have correlation with employees leaving the company and by focusing to minimize these factors or think of solutions to improve those factors, we can recommend solutions that help companies in minimizing their attrition rate. 
+
+2)
+
+The analysis in this project revealed some patterns. One of the most interesting finding of this analysis was that employees weekly work hours has a very strong relationship with employee leaving the company. Similarly, number of previous companies has strong relationship with employee leaving the company too. Also, the commute distance, total years at company and performance rating given by companies seems to have relationship with attrition rate as well. In contrast, frequency of business travel, years since promotion and job satisfaction alone did not seem to have a relationship with retention rate. By considering these key findings, businesses can benefit from lowering their attrition rate and improving their productivity and performance and thus stabilizing their workforce. 
+
+Below all of these key findings are explained in detail. 
+
+The result of the sample question indicates that there is a relationship between employees leaving the company. The result of analysis shows that employees who leave the company tend to have lower salaries when compared to employees who do not. The average salary among the 237 employees who left the company was \$76,625 which is over \$20,000 less than the average salary of employees who did not leave the company. Also, between the employees who did not leave the company, only 10% had a salary that is less than or equal to \$60,000. However, when looking at employees who did leave the company, this increase to 34%. 
+
+
+The result of the first question which was to find if there is a relationship between employee leaving the company and their weekly work hours, indicates that weekly work hours has a very strong relationship with employee leaving the company. Result showed employees who leave the company tend to work more hours per week( Minimum of 51 hours) when compared to employees who did not leave the company.
+Among the 237 employees that left the company, the average weekly hours was almost 59 hours. This is almost 10 hours more than the average weekly hours of employees who did not leave the company.
+Among the employees who did not leave the company, only 9 % work more than 52 hours per week.  When comparing that to employees who did leave the company, this increase to 99%. 
+
+
+The outcome of the second question which was to find if there is a relationship between employee leaving the company and their commute distance, shows that the commute distance is an important factor too. The average miles from home among the 237 employees who left the company was 10.63 which is almost 2 miles more than the average miles from home of employees who did not leave the company. Among the employees who did not leave the company,  only 28 % of them live more than 10 miles from their work place when Compare with employees who did leave the company, this increase to 39 %. 
+
+
+The result of analysis on finding a relationship between employees leaving the company and job satisfaction, indicated no specific relationship. Across all job satisfaction levels the percentages of the employees who did leave the company are lower than percentages of employees who did not leave the company. These percentages are 4.49, 3.13, 4.97 and 3.54 for low, medium, high and very high job satisfaction, respectively. These percentages are comparatively higher when compared to employees who did not leave the company. Therefore, no specific relationship or correlation between job satisfaction and employees leaving the company could be captured. 
+
+
+After doing an analysis on data, trying to find a relationship between employees leaving a company and the frequency of their business travel, no specific relationship captured. 
+The percentages of employee who did leave the company across all levels of business travel frequency (none, rarely and frequently) were lower than the percentages of employee who stayed with none, rarely and frequently business travel.
+
+
+The result of analysis on finding if there is a relationship between total years at company and employee leaving the company, showed that the employees who leave the company tend to have a lower total years at company compare with employees who stayed.
+Among the 237 employees who left the company the average years at company is 5.13 when compare to 1233 employees who stayed (average years at company 7.37 years), which is lower by 2 years. 
+Among employees who stayed at company, only 36 % have less than 5 years at company, but when compare to 237 employees who left the company, this increase to 59 %.  
+The median of total years at company for employees who stayed is 6 year, which is two times of the median of total years at company for employees who left (3 year).
+
+
+The result of analysis on finding a relationship between employees leaving the company and their total years since promotion, indicated no specific relationship. 
+The average years since promotion of employees who left the company is 1.92 when compare the average years since promotion of employees who stayed this is 2.23 which is close to each other and both groups have almost average of 2 years since promotion. 
+Among 237 employees who left the company 22% of them did not get promoted for more than 2 years when compare to employees who stayed we see that 26 % of them did not get promoted for more than 2 years. This is almost close to each other and again indicates that years since promotion does not have correlation to employees leaving the company. 
+
+
+The result of analysis on finding a relationship between employees leaving the company and their performance rating, reveals some kind of relationship. 
+According to analysis and the plot, employees who leave the company tend to receive less encouraging performance rating when compare to employees who did not leave the company. For instance, 37 % of total employees get the "Meet Expectation" performance rating in which 30 % of it, are who did not leave the company and only 7 % of those who left , received that rating. Similarly, total of 19.45 % got rating of "Exceptional" on which 19.25 % of it are employees who stayed and only 0.2 % for employee who left.
+In contrast, the result shows that the percentage of employees who left and had performance rating of "Not Effective" and  "Minimally Effective" are somewhat higher than employees who stayed with those performance ratings. 
+
+
+Lastly, the result of analysis on finding whether there is a relationship between employee leaving the company and number of companies they previously worked for, indicated that employees who left the company tend to have more previous companies that they have worked for when compare to employees who stayed. The average number of previous companies among 237 employees who left the company is 4.64 while the average number of previous companies among employees who stayed is less almost by half (2.96). 
+Among employees who "did not leave the company" only 19% of them have worked for more than 3 companies previously while among the employees who "did leave" the company 77 % of them have worked for more than 3 companies This percentage is almost 4 times bigger.
+This strong relationship can be observed on the associated violin plot, that among the employees who "did not leave the company" a big portion of them had less than or equal to 3 previous companies (concentration of the points). However the plot indicates that a big portion of employees who left the company have worked for more than 3 or 4 companies. (more points towards bigger number of companies.)
+
+3)Recommendations
+
+In conclusion, it is recommended to keep the employees' working hours at 40 hours per week as much as possible and not going over 48 hours, because that give them work-life balance and hence reduces their stress which results in better performance and job satisfaction. Referring to the result of analysis form question 1 and the histogram plot, it is observed that Result showed employees who leave the company they all worked  Minimum of 51 hours when compared to employees who did not leave the company. By reducing the work hours, company can benefit from retaining their talents and lowering the cost of losing employees by lowering the attrition rate.
+Also, in regard to total years at company, it is recommended to businesses that they offer compensation, bonuses to less experienced employees to attract and motivate them for staying in the company and do not leave for better benefits. 
+For mitigating the commute distance, it is recommended to either reimburse employees for their commute cost or provide free shuttle. Also, if it is possible for that job, offer employees to work remotely.This way businesses can minimal their attrition rate.  
+
+Another finding of the analysis was in regard to employees performance rating and the relationship between those rating and employee leaving the company. In this case, it is recommended to companies that maintain better and stronger relationships with their employees,by giving more encouraging performance rating rather than discouraging and spiteful ratings. Those performance rating if it is more encouraging can increase the performance level and boost employees energy which results in companies having higher retention rates and an overall positive culture within the workplace. Happy employees promote a positive and energetic work environment thus, causing the potential further growth of an employee. 
